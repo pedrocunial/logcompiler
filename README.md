@@ -1,1 +1,3 @@
 # logcompiler
+
+![](img/diagram.jpg)
