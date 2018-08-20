@@ -3,7 +3,7 @@ import token as tk
 
 
 class Tokenizer:
-    def __init__(self, src, pos=0, curr=None):
+    def __init__(self, src, pos=0, curr=tk.EmptyToken()):
         self.src = src
         self.pos = pos
         self.curr = curr
@@ -16,11 +16,11 @@ class Tokenizer:
         while self.src[self.pos].isspace():
             self.pos += 1
 
-        if self.curr is None:
-            # first case (must start with number)
-            self.read_int()
-        else:
-            self.read_any()
+        # if self.curr is None:
+        #     # first case (must start with number)
+        #     self.read_int()
+        # else:
+        self.read_any()
 
         return self.curr
 
@@ -49,10 +49,38 @@ class Tokenizer:
         self.pos += 1
         self.curr = ret
 
+    def is_open_comment(self):
+        if self.pos + 1 < len(self.src):
+            return (self.src[self.pos] + self.src[self.pos+1]) == \
+                const.OPEN_COMMENT
+        else:
+            return False
+
+    def is_close_comment(self):
+        if self.pos + 1 < len(self.src):
+            return (self.src[self.pos] + self.src[self.pos+1]) == \
+                const.CLOSE_COMMENT
+        else:
+            return False
+
+    def comment_loop(self):
+        ''' "traps" the tokenizer while in this "comment state" '''
+        src_len = len(self.src)
+        while not self.is_close_comment() and self.pos < src_len:
+            self.pos += 1
+
+        if self.pos >= src_len:
+            raise ValueError('Code ended with unclosed comment!')
+
+        self.pos += 2  # close comment uses 2 chars
+        self.get_next()
+
     def read_any(self):
         '''' generic token reader, calls specific methods '''
         curr_token = self.src[self.pos]
-        if curr_token in tk.Token.operators:
+        if self.is_open_comment():
+            self.comment_loop()
+        elif curr_token in tk.Token.operators:
             self.read_op()
         elif curr_token.isdigit():
             self.read_int()

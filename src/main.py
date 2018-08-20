@@ -7,5 +7,5 @@ if __name__ == '__main__':
         if value == 'exit':
             loop = False
             continue
-        parser = prs.Parser(value)
-        print('{} = {}'.format(value, parser.analyze_expression()))
+        prs.Parser(value)
+        print('{} = {}'.format(value, prs.Parser.analyze_expression()))

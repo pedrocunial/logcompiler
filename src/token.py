@@ -2,7 +2,7 @@ import constants as const
 
 
 class Token:
-    operators = (const.PLUS, const.MINUS)
+    operators = (const.PLUS, const.MINUS, const.DIV, const.MULT)
 
     def __init__(self, t, val):
         self.t = t
