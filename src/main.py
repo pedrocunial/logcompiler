@@ -3,7 +3,11 @@ import parser as prs
 if __name__ == '__main__':
     loop = True
     while loop:
-        value = input()
+        try:
+            value = input()
+        except EOFError as err:
+            loop = False
+            continue
         if value == 'exit':
             loop = False
             continue

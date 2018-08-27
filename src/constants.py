@@ -2,12 +2,17 @@ PLUS = '+'
 MINUS = '-'
 MULT = '*'
 DIV = '/'
+OPEN_PARENT = '('
+CLOSE_PARENT = ')'
+
 INT = 'int'
 OPERATOR = 'operator'
 
 OPEN_COMMENT = '/*'
 CLOSE_COMMENT = '*/'
 
+SIGN_OPS = (PLUS, MINUS)
 TERM_OPS = (MULT, DIV)
 EXPR_OPS = (PLUS, MINUS)
+FACT_OPS = (OPEN_PARENT, CLOSE_PARENT)
 
