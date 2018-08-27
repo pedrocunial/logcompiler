@@ -6,7 +6,8 @@
 
 ```
 expr = term, {('+' | '-'), term};
-term = num, {('*' | '/'), num};
+term = factor, {('*' | '/'), factor};
+factor = (('+' | '-') factor) | (num) | ('(', expr, ')');
 num = digit, {digit};
 digit = (0..9);
 ```
