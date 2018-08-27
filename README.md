@@ -1,6 +1,6 @@
 # logcompiler
 
-![](img/diagrama_c.jpg)
+![](img/diagrama_c.png)
 
 ### Diagrama Sintático
 
