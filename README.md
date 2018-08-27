@@ -1,8 +1,11 @@
 # logcompiler
 
+### Diagrama Sintático
+
 ![](img/diagrama_c.png)
 
-### Diagrama Sintático
+
+### EBNF
 
 ```
 expr = term, {('+' | '-'), term};
