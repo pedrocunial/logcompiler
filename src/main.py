@@ -1,15 +1,15 @@
 import parser as prs
+import constants as const
+import argparse
 
 if __name__ == '__main__':
-    loop = True
-    while loop:
-        try:
-            value = input()
-        except EOFError as err:
-            loop = False
-            continue
-        if value == 'exit':
-            loop = False
-            continue
-        prs.Parser(value)
-        print('{} = {}'.format(value, prs.Parser.analyze_expression()))
+    parser = argparse.ArgumentParser(description='Simple Calculator')
+    parser.add_argument('--file', dest='file', default=const.STD_FILE_NAME)
+
+    args = parser.parse_args()
+
+    with open(args.file, 'r') as fin:
+        for line in fin:
+            prs.Parser(line.strip())
+            print('{} = {}'.format(line[:-1],
+                                   prs.Parser.analyze_expression().eval()))

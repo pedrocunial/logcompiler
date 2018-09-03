@@ -1,7 +1,7 @@
-from tokenizer import Tokenizer
-
-import token as tk
 import constants as const
+import node as nd
+
+from tokenizer import Tokenizer
 
 
 class Parser:
@@ -30,10 +30,9 @@ class Parser:
                                  .format(Parser.tok.curr.val))
         elif value.t in const.SIGN_OPS:
             # + or - factor
-            return Parser.analyze_expression() if value.val == const.PLUS \
-                else -Parser.analyze_expression()
+            return nd.UnOp(value.t, [Parser.analyze_fact()])
         elif value.t == const.INT:
-            return value.val
+            return nd.IntVal(value.val, [])
         else:
             raise ValueError(
                 'Unexpected token type, expected a factor, got a {}'.format(
@@ -42,13 +41,9 @@ class Parser:
     def analyze_term():
         ''' terms accept * and / and are "inside" expressions '''
         result = Parser.analyze_fact()
-        # print('#analyze_term', Parser.tok.curr.val)
         value = Parser.tok.get_next()  # expected to be a TERM_OPS
-        # print('#analyze_term', Parser.tok.curr.val)
         while Parser.is_valid(value) and value.t in const.TERM_OPS:
-            op = value.t
-            result = result * Parser.analyze_fact() if op == const.MULT else \
-                     result // Parser.analyze_fact()
+            result = nd.BinOp(value.t, [result, Parser.analyze_fact()])
             value = Parser.tok.get_next()
         return result
 
@@ -57,12 +52,8 @@ class Parser:
         expressions accept + and - and are the most "outter" math operation
         '''
         result = Parser.analyze_term()
-        # print('#analyze_expr', Parser.tok.curr.val)
         value = Parser.tok.curr  # expecting our first op
         while Parser.is_valid(value) and value.t in const.EXPR_OPS:
-            op = value.t
-            result = result + Parser.analyze_term() if op == const.PLUS else \
-                     result - Parser.analyze_term()
+            result = nd.BinOp(value.t, [result, Parser.analyze_term()])
             value = Parser.tok.curr
-
         return result
