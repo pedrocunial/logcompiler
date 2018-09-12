@@ -1,10 +1,18 @@
-/* bla */ 1 /* bla */
-3-2
-4/2+3
-3+4/2
-2 + 3 * /* bla */ 5
-11+22+33 /*
-(3 + 2) /5
-+--++3
-3 - -2/4
-4/(1+1)*2
+{
+    /* isso e um comentario e
+       deveria
+       ser
+       ignorado
+       rsrsrs
+    */
+    x = 3;
+    y = 2;
+    {
+        printf(x);
+    }
+    printf(x + y);
+    printf(x - -y);
+    printf(    /* bla */ 1 /* bla */);
+    printf(  3+4/2 + y);
+}
+

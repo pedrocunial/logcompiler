@@ -2,6 +2,7 @@ import constants as const
 import node as nd
 
 from tokenizer import Tokenizer
+from symboltable import SymbolTable
 
 
 class Parser:
@@ -9,6 +10,7 @@ class Parser:
 
     def __init__(self, src):
         Parser.tok = Tokenizer(src)
+        Parser.tok.get_next()
 
     def is_valid(value):
         return value.t is not None and value.val is not None
@@ -33,6 +35,8 @@ class Parser:
             return nd.UnOp(value.t, [Parser.analyze_fact()])
         elif value.t == const.INT:
             return nd.IntVal(value.val, [])
+        elif value.t == const.VARIABLE:
+            return nd.VarVal(value.val, [])
         else:
             raise ValueError(
                 'Unexpected token type, expected a factor, got a {}'.format(
@@ -52,8 +56,74 @@ class Parser:
         expressions accept + and - and are the most "outter" math operation
         '''
         result = Parser.analyze_term()
-        value = Parser.tok.curr  # expecting our first op
+        value = Parser.tok.curr
         while Parser.is_valid(value) and value.t in const.EXPR_OPS:
             result = nd.BinOp(value.t, [result, Parser.analyze_term()])
             value = Parser.tok.curr
         return result
+
+    def analyze_print():
+        value = Parser.tok.get_next()  # should be open_par
+        if value.t != const.OPEN_PARENT:
+            raise ValueError('Unexpected token type {}, expected ('
+                             .format(value.t))
+        result = nd.UnOp(const.PRINT, [Parser.analyze_expression()])
+        value = Parser.tok.curr
+        if value.t != const.CLOSE_PARENT:
+            raise ValueError('Unexpected token type {}, expected )'
+                             .format(value.t))
+        Parser.tok.get_next()
+        return result
+
+    def analyze_attr():
+        ''' attr are basically formed of variable = expr '''
+        variable_name = Parser.tok.curr.val
+        value = Parser.tok.get_next()  # should be assigner
+        if value.t != const.ASSIGN:
+            raise ValueError('Unexpected token type {}, expected ='
+                             .format(value.t))
+        return nd.BinOp(const.ASSIGN, [variable_name,
+                                       Parser.analyze_expression()])
+
+    def analyze_cmd():
+        ''' basically, a cmd is a line of code '''
+        value = Parser.tok.get_next()
+        if value.t == const.VARIABLE:
+            return Parser.analyze_attr()
+        elif value.t == const.RESERVED_WORD and value.val == const.PRINT:
+            return Parser.analyze_print()
+        elif value.t == const.OPEN_BLOCK:
+            return Parser.analyze_cmds()
+        elif value.t == const.CLOSE_BLOCK:
+            return None
+        else:
+            raise ValueError('Unexpected token type {}, expected a cmd'
+                             .format(value.t))
+
+    def analyze_cmds():
+        '''
+        cmds are the most outter program logic block, including multiple
+        lines
+        '''
+        value = Parser.tok.curr
+        if value.t != const.OPEN_BLOCK:
+            raise ValueError('First token should be an {, not {}'
+                             .format(value.t))
+        cmds = [Parser.analyze_cmd()]
+        value = Parser.tok.curr
+        while Parser.is_valid(value) and (value.t == const.SEMICOLON
+                                          or value.t == const.CLOSE_BLOCK):
+            res = Parser.analyze_cmd()
+            value = Parser.tok.curr
+            if res is None:
+                break
+            cmds.append(res)
+        if value.t != const.CLOSE_BLOCK:
+            print(Parser.tok.src[Parser.tok.pos-10:Parser.tok.pos+10])
+            raise ValueError('Last token of the block is a {}, not a {}'
+                             .format(value.t, const.CLOSE_BLOCK))
+        return nd.CmdsOp(None, cmds)
+
+    def parse():
+        st = SymbolTable()
+        return Parser.analyze_cmds().eval(st)

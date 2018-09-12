@@ -71,6 +71,23 @@ class Tokenizer:
         self.pos += 2  # close comment uses 2 chars
         self.get_next()
 
+    def read_word(self):
+        '''
+        read a word character by character, returning a node for it
+        with it's type being either variable or reserved word
+        a variable can only start with a character, but can have numbers
+        and underscore in it
+        '''
+        word = self.src[self.pos]
+        self.pos += 1
+        while self.src[self.pos].isalpha() or self.src[self.pos].isdigit() \
+              or self.src[self.pos] == const.UNDERSCORE:
+            word += self.src[self.pos]
+            self.pos += 1
+        self.curr = tk.Token(const.RESERVED_WORD
+                             if word in const.RESERVED_WORDS
+                             else const.VARIABLE, word)
+
     def read_any(self):
         '''' generic token reader, calls specific methods '''
         curr_token = self.src[self.pos]
@@ -80,6 +97,8 @@ class Tokenizer:
             self.read_op()
         elif curr_token.isdigit():
             self.read_int()
+        elif curr_token.isalpha():
+            self.read_word()
         else:
             raise ValueError('Unexpected token {}, doesn\'t fit any known type'
                              .format(curr_token))

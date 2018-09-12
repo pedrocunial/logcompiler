@@ -9,7 +9,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with open(args.file, 'r') as fin:
-        for line in fin:
-            prs.Parser(line.strip())
-            print('{} = {}'.format(line[:-1],
-                                   prs.Parser.analyze_expression().eval()))
+        prs.Parser(fin.read())
+        prs.Parser.parse()
