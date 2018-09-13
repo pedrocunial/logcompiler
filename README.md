@@ -16,9 +16,15 @@ Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O 
 ### EBNF
 
 ```
+cmds = '{', cmd, ';', {cmd, ';'}, '}';
+cmd = print | atribuicao | cmds;
+atribuicao = varname, '=', expr;
+print = 'printf', '(', expr, ')';
 expr = term, {('+' | '-'), term};
 term = factor, {('*' | '/'), factor};
-factor = (('+' | '-') factor) | (num) | ('(', expr, ')');
+factor = varname | (('+' | '-') factor) | (num) | ('(', expr, ')');
 num = digit, {digit};
+varname = char, (char | digit | '_');
 digit = (0..9);
+char = (a..Z);
 ```

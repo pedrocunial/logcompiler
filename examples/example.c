@@ -14,5 +14,7 @@
     printf(x - -y);
     printf(    /* bla */ 1 /* bla */);
     printf(  3+4/2 + y);
+    z = x + y;
+    printf(x + y + z);
 }
 
