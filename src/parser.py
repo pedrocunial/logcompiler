@@ -85,6 +85,18 @@ class Parser:
         return nd.BinOp(const.ASSIGN, [variable_name,
                                        Parser.analyze_expression()])
 
+    def analyze_if():
+        '''
+        if has 3 children:
+            1: Operation to be evaluated (true/false)
+            2: True stmt
+            3: False stmt (not mandatory, can be NoOp)
+        '''
+        value = Parser.tok.curr
+        if value.t != const.IF:
+            raise ValueError('Unexpected token type {}, expected if'
+                             .format(value.t))
+
     def analyze_cmd():
         ''' basically, a cmd is a line of code '''
         value = Parser.tok.get_next()
@@ -96,6 +108,8 @@ class Parser:
             return Parser.analyze_cmds()
         elif value.t == const.CLOSE_BLOCK:
             return None
+        elif value.t == const.IF:
+            return Parser.analyze_if()
         else:
             raise ValueError('Unexpected token type {}, expected a cmd'
                              .format(value.t))

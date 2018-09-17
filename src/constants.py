@@ -5,10 +5,19 @@ DIV = '/'
 ASSIGN = '='
 SEMICOLON = ';'
 UNDERSCORE = '_'
+EQUALS = '=='
+LT = '<'
+GT = '>'
+AND = '&&'
+OR = '||'
+NOT = '!'
 
+IF = 'if'
+WHILE = 'while'
 INT = 'int'
 OPERATOR = 'operator'
 PRINT = 'printf'
+SCANF = 'scanf'
 RESERVED_WORD = 'reserved_word'
 VARIABLE = 'variable'
 
@@ -27,9 +36,10 @@ EXPR_OPS = (PLUS, MINUS)
 FACT_OPS = (OPEN_PARENT, CLOSE_PARENT)
 RESERVED_WORDS = (PRINT)
 
+TRIOP_CHILD_SIZE = 3
 BINOP_CHILD_SIZE = 2
 UNOP_CHILD_SIZE = 1
 INTVAL_CHILD_SIZE = 0
 VARVAL_CHILD_SIZE = 0
 NOOP_CHILD_SIZE = 0
-
+SCANF_CHILD_SIZE = 0
