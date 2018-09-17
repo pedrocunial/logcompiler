@@ -11,10 +11,14 @@ class Tokenizer:
     def get_next(self):
         ''' return the next token '''
         if self.pos >= len(self.src):
+            self.curr = tk.EmptyToken()
             return tk.EmptyToken()  # easier error handling later on
 
         while self.src[self.pos].isspace():
             self.pos += 1
+            if self.pos >= len(self.src):
+                self.curr = tk.EmptyToken()
+                return tk.EmptyToken()
 
         self.read_any()
 

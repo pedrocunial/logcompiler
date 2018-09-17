@@ -9,7 +9,7 @@
     y = 2;
     {
         printf(x);
-    }
+    };
     printf(x + y);
     printf(x - -y);
     printf(    /* bla */ 1 /* bla */);
@@ -17,4 +17,3 @@
     z = x + y;
     printf(x + y + z);
 }
-

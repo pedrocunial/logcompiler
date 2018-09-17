@@ -13,9 +13,6 @@ class Node(object):
 class CmdsOp(Node):
     def eval(self, st):
         for child in self.children:
-            if child is None:
-                print('child is none xd')
-                continue
             child.eval(st)
 
 

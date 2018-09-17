@@ -111,19 +111,21 @@ class Parser:
                              .format(value.t))
         cmds = [Parser.analyze_cmd()]
         value = Parser.tok.curr
-        while Parser.is_valid(value) and (value.t == const.SEMICOLON
-                                          or value.t == const.CLOSE_BLOCK):
+        while Parser.is_valid(value) and value.t == const.SEMICOLON:
             res = Parser.analyze_cmd()
             value = Parser.tok.curr
             if res is None:
                 break
             cmds.append(res)
         if value.t != const.CLOSE_BLOCK:
-            print(Parser.tok.src[Parser.tok.pos-10:Parser.tok.pos+10])
             raise ValueError('Last token of the block is a {}, not a {}'
                              .format(value.t, const.CLOSE_BLOCK))
+        value = Parser.tok.get_next()
         return nd.CmdsOp(None, cmds)
 
     def parse():
         st = SymbolTable()
-        return Parser.analyze_cmds().eval(st)
+        res = Parser.analyze_cmds().eval(st)
+        if Parser.is_valid(Parser.tok.curr):
+            raise ValueError('Found remaning values after last block')
+        return res
