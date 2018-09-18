@@ -19,7 +19,7 @@ Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O 
 logic_stmt = expr, ('==' | '>' | '<'), expr;
 logic_expr = logic_term, {'||', logic_term};
 logic_term = logic_factor, {'&&', logic_factor};
-logic_factor = ('!', logic_factor) | ('(', logic_expr, ')') | (logic_stmt);
+logic_factor = ('!', logic_factor) | logic_stmt;
 if = 'if', '(', logic_stmt, ')', stmt, ['else', stmt];
 while = 'while', '(', logic_stmt, ')', stmt;
 stmts = '{', stmt, ';', {stmt, ';'}, '}';
