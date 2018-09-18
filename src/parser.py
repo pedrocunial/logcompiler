@@ -97,7 +97,7 @@ class Parser:
             raise ValueError('Unexpected token type {}, expected if'
                              .format(value.t))
 
-    def analyze_cmd():
+    def analyze_stmt():
         ''' basically, a cmd is a line of code '''
         value = Parser.tok.get_next()
         if value.t == const.VARIABLE:
@@ -105,7 +105,7 @@ class Parser:
         elif value.t == const.RESERVED_WORD and value.val == const.PRINT:
             return Parser.analyze_print()
         elif value.t == const.OPEN_BLOCK:
-            return Parser.analyze_cmds()
+            return Parser.analyze_stmts()
         elif value.t == const.CLOSE_BLOCK:
             return None
         elif value.t == const.IF:
@@ -114,7 +114,7 @@ class Parser:
             raise ValueError('Unexpected token type {}, expected a cmd'
                              .format(value.t))
 
-    def analyze_cmds():
+    def analyze_stmts():
         '''
         cmds are the most outter program logic block, including multiple
         lines
@@ -123,23 +123,22 @@ class Parser:
         if value.t != const.OPEN_BLOCK:
             raise ValueError('First token should be an {, not {}'
                              .format(value.t))
-        cmds = [Parser.analyze_cmd()]
+        stmts = [Parser.analyze_stmt()]
         value = Parser.tok.curr
         while Parser.is_valid(value) and value.t == const.SEMICOLON:
-            res = Parser.analyze_cmd()
+            res = Parser.analyze_stmt()
             value = Parser.tok.curr
-            if res is None:
-                break
-            cmds.append(res)
+            if res is not None:
+                stmts.append(res)
         if value.t != const.CLOSE_BLOCK:
             raise ValueError('Last token of the block is a {}, not a {}'
                              .format(value.t, const.CLOSE_BLOCK))
         value = Parser.tok.get_next()
-        return nd.CmdsOp(None, cmds)
+        return nd.CmdsOp(None, stmts)
 
     def parse():
         st = SymbolTable()
-        res = Parser.analyze_cmds().eval(st)
+        res = Parser.analyze_stmts().eval(st)
         if Parser.is_valid(Parser.tok.curr):
             raise ValueError('Found remaning values after last block')
         return res
