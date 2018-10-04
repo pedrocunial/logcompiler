@@ -101,7 +101,7 @@ class Scanf(Node):
         super().__init__(value, children)
 
     def eval(self, st):
-        return int(input())
+        return int(input('input: '))
 
 
 class IntVal(Node):
@@ -127,11 +127,8 @@ class VarVal(Node):
 
 
 class NoOp(Node):
-    def __init__(self, value, children):
-        if len(children) != const.NOOP_CHILD_SIZE:
-            raise ValueError('Wrong size for children, expected {}, got {}'
-                             .format(const.NOOP_CHILD_SIZE, len(children)))
-        super().__init__(value, children)
+    def __init__(self, value=None, children=None):
+        pass
 
     def eval(self, st):
         pass

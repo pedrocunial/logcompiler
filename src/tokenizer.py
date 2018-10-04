@@ -48,9 +48,14 @@ class Tokenizer:
         read a known single digit operator (in tk.Token.operators),
         such as +, - etc
         '''
-        ret = tk.Token(self.src[self.pos], self.src[self.pos])
-        self.pos += 1
-        self.curr = ret
+        if self.src[self.pos] != const.ASSIGN or \
+           self.src[self.pos+1] != const.ASSIGN:  # checks for ==
+            ret = tk.Token(self.src[self.pos], self.src[self.pos])
+            self.pos += 1
+            self.curr = ret
+        else:  # ==
+            self.pos += 2
+            self.curr = tk.Token(const.EQUALS, const.EQUALS)
 
     def is_open_comment(self):
         if self.pos + 1 < len(self.src):

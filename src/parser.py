@@ -1,5 +1,6 @@
 import constants as const
 import node as nd
+import utils
 
 from tokenizer import Tokenizer
 from symboltable import SymbolTable
@@ -37,6 +38,16 @@ class Parser:
             return nd.IntVal(value.val, [])
         elif value.t == const.VARIABLE:
             return nd.VarVal(value.val, [])
+        elif value.t == const.RESERVED_WORD and value.val == const.SCANF:
+            value = Parser.tok.get_next()
+            if value.t != const.OPEN_PARENT:
+                raise ValueError(f'Unexpected token type {value.t}, ' +
+                                 'expected (')
+            value = Parser.tok.get_next()
+            if value.t != const.CLOSE_PARENT:
+                raise ValueError(f'Unexpected token type {value.t}, ' +
+                                 'expected )')
+            return nd.Scanf(value.val, [])
         else:
             raise ValueError(
                 'Unexpected token type, expected a factor, got a {}'.format(
@@ -80,10 +91,50 @@ class Parser:
         variable_name = Parser.tok.curr.val
         value = Parser.tok.get_next()  # should be assigner
         if value.t != const.ASSIGN:
+            utils.print_error(Parser)
             raise ValueError('Unexpected token type {}, expected ='
                              .format(value.t))
         return nd.BinOp(const.ASSIGN, [variable_name,
                                        Parser.analyze_expression()])
+
+    def analyze_logic_stmt():
+        ''' expr (== | > | <) expr '''
+        expr = Parser.analyze_expression()
+        value = Parser.tok.curr
+        if value.t not in const.LOGIC_EXPR_OPS:
+            utils.print_error(Parser)
+            raise ValueError(f'Unexpected token type {value.t}, expected a' +
+                             ' logic expression')
+        operator = value.t
+        return nd.BinOp(operator, [expr, Parser.analyze_expression()])
+
+    def analyze_logic_factor():
+        '''' !, logic_factor | logic_stmt '''
+        value = Parser.tok.curr
+        if not Parser.is_valid(value):
+            raise ValueError(f'invalid token {value.val} in logic factor')
+        if value.t == const.NOT:
+            return nd.UnOp(const.NOT, [Parser.analyze_logic_expr()])
+        else:
+            return Parser.analyze_logic_stmt()
+
+    def analyze_logic_term():
+        ''' logic_factor {&&, logic_factor} '''
+        result = Parser.analyze_logic_factor()
+        value = Parser.tok.curr  # expected to be a TERM_OPS
+        while Parser.is_valid(value) and value.t == const.AND:
+            result = nd.BinOp(value.t, [result, Parser.analyze_logic_factor()])
+            value = Parser.tok.curr
+        return result
+
+    def analyze_logic_expr():
+        ''' logic_term {||, logic_term}  '''
+        result = Parser.analyze_logic_term()
+        value = Parser.tok.curr
+        while Parser.is_valid(value) and value.t == const.OR:
+            result = nd.BinOp(value.t, [result, Parser.analyze_logic_term()])
+            value = Parser.tok.curr
+        return result
 
     def analyze_if():
         '''
@@ -92,10 +143,39 @@ class Parser:
             2: True stmt
             3: False stmt (not mandatory, can be NoOp)
         '''
-        value = Parser.tok.curr
-        if value.t != const.IF:
-            raise ValueError('Unexpected token type {}, expected if'
+        value = Parser.tok.get_next()
+        if value.t != const.OPEN_PARENT:
+            raise ValueError('Unexpected token type {}, expected ('
                              .format(value.t))
+        logic = Parser.analyze_logic_expr()
+        value = Parser.tok.curr
+        if value.t != const.CLOSE_PARENT:
+            raise ValueError('Unexpected token type {}, expected )'
+                             .format(value.t))
+        true_stmt = Parser.analyze_stmt()
+        value = Parser.tok.get_next()
+        false_stmt = Parser.analyze_stmt() if value.val == const.ELSE \
+                     else nd.NoOp()
+        return nd.TriOp(const.IF, [logic, true_stmt, false_stmt])
+
+    def analyze_while():
+        '''
+        while has 3 children:
+            1: Operation to be evaluated (true/false)
+            2: Loop content (stmt)
+        '''
+        value = Parser.tok.get_next()
+        if value.t != const.OPEN_PARENT:
+            raise ValueError('Unexpected token type {}, expected ('
+                             .format(value.t))
+        logic = Parser.analyze_logic_expr()
+        value = Parser.tok.curr
+        if value.t != const.CLOSE_PARENT:
+            raise ValueError('Unexpected token type {}, expected )'
+                             .format(value.t))
+        return nd.BinOp(const.WHILE, [logic, Parser.analyze_stmt()])
+
+
 
     def analyze_stmt():
         ''' basically, a cmd is a line of code '''
@@ -108,8 +188,10 @@ class Parser:
             return Parser.analyze_stmts()
         elif value.t == const.CLOSE_BLOCK:
             return None
-        elif value.t == const.IF:
+        elif value.t == const.RESERVED_WORD and value.val == const.IF:
             return Parser.analyze_if()
+        elif value.t == const.RESERVED_WORD and value.val == const.WHILE:
+            return Parser.analyze_while()
         else:
             raise ValueError('Unexpected token type {}, expected a cmd'
                              .format(value.t))
@@ -131,6 +213,7 @@ class Parser:
             if res is not None:
                 stmts.append(res)
         if value.t != const.CLOSE_BLOCK:
+            utils.print_error(Parser)
             raise ValueError('Last token of the block is a {}, not a {}'
                              .format(value.t, const.CLOSE_BLOCK))
         value = Parser.tok.get_next()
