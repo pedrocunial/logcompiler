@@ -175,8 +175,6 @@ class Parser:
                              .format(value.t))
         return nd.BinOp(const.WHILE, [logic, Parser.analyze_stmt()])
 
-
-
     def analyze_stmt():
         ''' basically, a cmd is a line of code '''
         value = Parser.tok.get_next()

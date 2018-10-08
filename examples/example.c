@@ -7,7 +7,7 @@
     */
     x = 3;
     y = 2;
-    if (x > y) {
+    if (x > y || x == 2) {
         printf(x);
     };
     else {
