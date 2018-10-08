@@ -1,10 +1,12 @@
-{
+void main() {
     /* isso e um comentario e
        deveria
        ser
        ignorado
        rsrsrs
     */
+    int x;
+    int y;
     x = 3;
     y = 2;
     if (x > y || x == 2) {
@@ -27,11 +29,16 @@
     printf(x - -y);
     printf(    /* bla */ 1 /* bla */);
     printf(  3+4/2 + y);
+
+    int z;
     z = x + y;
+
     printf(x + y + z);
     x = scanf() + 3;
     y = -scanf();
     printf(x);
     printf(y);
     printf(scanf());
+
+    char keyla_roberta;
 }

@@ -16,11 +16,27 @@ IF = 'if'
 ELSE = 'else'
 WHILE = 'while'
 INT = 'int'
+CHAR = 'char'  # equivalent to bool
+VOID = 'void'
 OPERATOR = 'operator'
 PRINT = 'printf'
 SCANF = 'scanf'
 RESERVED_WORD = 'reserved_word'
 VARIABLE = 'variable'
+DECLARE = 'declare'
+MAIN = 'main'
+
+DEFAULT_VALUES = {
+    INT: 0,
+    CHAR: False,
+    VOID: None
+}
+
+AS_TYPE = {
+    INT: int,
+    CHAR: bool,
+    VOID: None
+}
 
 OPEN_PARENT = '('
 CLOSE_PARENT = ')'
@@ -31,11 +47,12 @@ CLOSE_COMMENT = '*/'
 
 STD_FILE_NAME = '../examples/example.c'
 
+TYPES = (INT, CHAR, VOID)
 SIGN_OPS = (PLUS, MINUS)
 TERM_OPS = (MULT, DIV)
 EXPR_OPS = (PLUS, MINUS)
 FACT_OPS = (OPEN_PARENT, CLOSE_PARENT)
-RESERVED_WORDS = (PRINT, IF, ELSE, WHILE, SCANF)
+RESERVED_WORDS = (PRINT, IF, ELSE, WHILE, SCANF, INT, CHAR, VOID, MAIN)
 LOGIC_EXPR_OPS = (EQUALS, LT, GT)
 
 TRIOP_CHILD_SIZE = 3

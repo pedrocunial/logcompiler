@@ -67,6 +67,8 @@ class BinOp(Node):
             return self.children[0].eval(st) or self.children[1].eval(st)
         elif self.value == const.WHILE:
             self.eval_while(st)
+        elif self.value == const.DECLARE:
+            st.add(self.children[0], self.children[1])
         else:
             raise ValueError('Unexpected operator {} for binop'
                              .format(self.value))

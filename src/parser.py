@@ -175,21 +175,38 @@ class Parser:
                              .format(value.t))
         return nd.BinOp(const.WHILE, [logic, Parser.analyze_stmt()])
 
+    def analyze_vardec():
+        ''' <type> <varname> '''
+        type_ = Parser.tok.curr.val
+        varname = Parser.tok.get_next()
+        if varname.t != const.VARIABLE:
+            raise ValueError('Unexpected token type {}, expected variable name'
+                             .format(varname.t))
+        varname = varname.val
+        Parser.tok.get_next()
+        return nd.BinOp(const.DECLARE, [type_, varname])
+
     def analyze_stmt():
         ''' basically, a cmd is a line of code '''
         value = Parser.tok.get_next()
         if value.t == const.VARIABLE:
             return Parser.analyze_attr()
-        elif value.t == const.RESERVED_WORD and value.val == const.PRINT:
-            return Parser.analyze_print()
         elif value.t == const.OPEN_BLOCK:
             return Parser.analyze_stmts()
         elif value.t == const.CLOSE_BLOCK:
             return None
-        elif value.t == const.RESERVED_WORD and value.val == const.IF:
-            return Parser.analyze_if()
-        elif value.t == const.RESERVED_WORD and value.val == const.WHILE:
-            return Parser.analyze_while()
+        elif value.t == const.RESERVED_WORD:
+            if value.val in const.TYPES:
+                return Parser.analyze_vardec()
+            elif value.val == const.IF:
+                return Parser.analyze_if()
+            elif value.val == const.WHILE:
+                return Parser.analyze_while()
+            elif value.val == const.PRINT:
+                return Parser.analyze_print()
+            else:
+                raise ValueError('Unexpected token type {}, expected a cmd'
+                                 .format(value.t))
         else:
             raise ValueError('Unexpected token type {}, expected a cmd'
                              .format(value.t))
@@ -217,9 +234,27 @@ class Parser:
         value = Parser.tok.get_next()
         return nd.CmdsOp(None, stmts)
 
+    def analyze_main():
+        ''' <type> main() { <stmts> } '''
+        value = Parser.tok.curr  # should be type
+        if value.val not in const.TYPES:
+            raise ValueError('Program doesn\'t start with a known type')
+        value = Parser.tok.get_next()
+        if value.val != const.MAIN:
+            raise ValueError('Main function should be named main, '
+                             f'not {value.val}')
+        value = Parser.tok.get_next()
+        if value.val != const.OPEN_PARENT:
+            raise ValueError(f'Expected (, not {value.val}')
+        value = Parser.tok.get_next()
+        if value.val != const.CLOSE_PARENT:
+            raise ValueError(f'Expected ), not {value.val}')
+        Parser.tok.get_next()
+        return Parser.analyze_stmts()
+
     def parse():
         st = SymbolTable()
-        res = Parser.analyze_stmts().eval(st)
+        res = Parser.analyze_main()
         if Parser.is_valid(Parser.tok.curr):
             raise ValueError('Found remaning values after last block')
-        return res
+        return res.eval(st)
