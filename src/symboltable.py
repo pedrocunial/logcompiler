@@ -26,7 +26,9 @@ class SymbolTable(object):
     def set(self, key, value):
         if key not in self.st:
             raise ValueError(f'Undefined variable {key}')
-        elif isinstance(value, self.st[key].type_):
+        elif (self.st[key].type_ == const.CHAR and
+              const.MIN_CHAR <= value <= const.MAX_CHAR) or \
+              self.st[key].type_ == const.INT:
             self.st[key].value = value
         else:
             raise ValueError(f'Unmatching type {type(value)} and' +

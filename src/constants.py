@@ -28,15 +28,18 @@ MAIN = 'main'
 
 DEFAULT_VALUES = {
     INT: 0,
-    CHAR: False,
+    CHAR: 0,
     VOID: None
 }
 
 AS_TYPE = {
     INT: int,
-    CHAR: bool,
+    CHAR: int,
     VOID: None
 }
+
+MIN_CHAR = -256
+MAX_CHAR = 255
 
 OPEN_PARENT = '('
 CLOSE_PARENT = ')'
