@@ -16,6 +16,8 @@ Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O 
 ### EBNF
 
 ```
+program = type, 'main', '(', ')', stmts;
+type = ('int' | 'char' | 'void');
 logic_stmt = expr, ('==' | '>' | '<'), expr;
 logic_expr = logic_term, {'||', logic_term};
 logic_term = logic_factor, {'&&', logic_factor};
@@ -23,7 +25,8 @@ logic_factor = ('!', logic_factor) | logic_stmt;
 if = 'if', '(', logic_expr, ')', stmt, ['else', stmt];
 while = 'while', '(', logic_expr, ')', stmt;
 stmts = '{', stmt, ';', {stmt, ';'}, '}';
-stmt = print | atribuicao | stmts | if | while;
+stmt = print | atribuicao | stmts | if | while | vardec;
+vardec = type, varname, {',', varname};
 atribuicao = varname, '=', expr;
 print = 'printf', '(', expr, ')';
 expr = term, {('+' | '-'), term};
