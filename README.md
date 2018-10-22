@@ -6,7 +6,7 @@ O programa foi feito com python 3.6 em mente, não existe garantia de funcioname
 
 Além disso, o programa exige a depende da existência da biblioteca [argparse](https://docs.python.org/3/library/argparse.html).
 
-Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O arquivo aceita a flag `--file` como argumento (opcional). Como padrão, ele utiliza o arquivo de entrada [/examples/example.c](/examples/example.c).
+Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O arquivo aceita a flag `--file` como argumento (opcional). Como padrão, ele utiliza o arquivo de entrada [/examples/example.c](/examples/example.c). Além disso, foi adicionado um arquivo novo, o [/examples/type_error.c](/examples/type_error.c); a sua execucao deve resultar em um erro relativo à atribuicao erronea de dados (devido ao seu tipo).
 
 ### Diagrama Sintático
 

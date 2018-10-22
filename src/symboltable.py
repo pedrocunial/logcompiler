@@ -14,8 +14,7 @@ class SymbolTable(object):
     def add(self, type_, key):
         if key in self.st:
             raise ValueError(f'Variable name "{key}" already used')
-        self.st[key] = Symbol(const.DEFAULT_VALUES[type_],
-                              const.AS_TYPE[type_])
+        self.st[key] = Symbol(const.DEFAULT_VALUES[type_], type_)
 
     def get(self, key):
         if key not in self.st:
@@ -26,10 +25,11 @@ class SymbolTable(object):
     def set(self, key, value):
         if key not in self.st:
             raise ValueError(f'Undefined variable {key}')
-        elif (self.st[key].type_ == const.CHAR and
-              const.MIN_CHAR <= value <= const.MAX_CHAR) or \
-              self.st[key].type_ == const.INT:
-            self.st[key].value = value
+        if self.st[key].type_ == const.CHAR:
+            if value < const.MIN_CHAR or value > const.MAX_CHAR:
+                raise ValueError(f'Unmatching size of value {value} for type' +
+                                 ' char')
+            else:
+                self.st[key].value = value
         else:
-            raise ValueError(f'Unmatching type {type(value)} and' +
-                             f' {self.st[key].type_}')
+            self.st[key].value = value

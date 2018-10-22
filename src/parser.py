@@ -153,10 +153,12 @@ class Parser:
             raise ValueError('Unexpected token type {}, expected )'
                              .format(value.t))
         true_stmt = Parser.analyze_stmt()
-        value = Parser.tok.get_next()
-        false_stmt = Parser.analyze_stmt() if value.val == const.ELSE \
-                     else nd.NoOp()
-        return nd.TriOp(const.IF, [logic, true_stmt, false_stmt])
+        value = Parser.tok.curr
+        if value.val == const.ELSE:
+            false_stmt = Parser.analyze_stmt()
+            return nd.TriOp(const.IF, [logic, true_stmt, false_stmt])
+        else:
+            return nd.TriOp(const.IF, [logic, true_stmt, nd.NoOp()])
 
     def analyze_while():
         '''
@@ -176,15 +178,22 @@ class Parser:
         return nd.BinOp(const.WHILE, [logic, Parser.analyze_stmt()])
 
     def analyze_vardec():
-        ''' <type> <varname> '''
+        ''' <type> <varname> {, <varname>} '''
         type_ = Parser.tok.curr.val
-        varname = Parser.tok.get_next()
-        if varname.t != const.VARIABLE:
+        varnames = [Parser.tok.get_next()]
+        if varnames[0].t != const.VARIABLE:
             raise ValueError('Unexpected token type {}, expected variable name'
-                             .format(varname.t))
-        varname = varname.val
-        Parser.tok.get_next()
-        return nd.BinOp(const.DECLARE, [type_, varname])
+                             .format(varnames[0].t))
+        value = Parser.tok.get_next()
+        while Parser.is_valid(value) and value.t == const.COMMA:
+            value = Parser.tok.get_next()
+            if value.t != const.VARIABLE:
+                raise ValueError(f'Unexpected token type {value.t}, ' +
+                                 'expected variable name')
+            varnames.append(value)
+            value = Parser.tok.get_next()
+        varnames = [varname.val for varname in varnames]
+        return nd.BinOp(const.DECLARE, [type_, varnames])
 
     def analyze_stmt():
         ''' basically, a cmd is a line of code '''
@@ -205,6 +214,7 @@ class Parser:
             elif value.val == const.PRINT:
                 return Parser.analyze_print()
             else:
+                utils.print_error(Parser)
                 raise ValueError('Unexpected token type {}, expected a cmd'
                                  .format(value.t))
         else:
@@ -250,11 +260,13 @@ class Parser:
         if value.val != const.CLOSE_PARENT:
             raise ValueError(f'Expected ), not {value.val}')
         Parser.tok.get_next()
-        return Parser.analyze_stmts()
+        stmts = Parser.analyze_stmts()
+        return stmts
 
     def parse():
         st = SymbolTable()
         res = Parser.analyze_main()
         if Parser.is_valid(Parser.tok.curr):
+            utils.print_error(Parser)
             raise ValueError('Found remaning values after last block')
         return res.eval(st)

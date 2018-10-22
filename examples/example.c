@@ -7,17 +7,38 @@ void main() {
     */
     int x;
     int y;
+    char raul_ikeda, m4Rc3L0_4NDr4D3;
     x = 3;
-    y = 2;
+    y        =        2;
+
+    if (y > 2)
+        printf(y);
+
     if (x > y || x == 2) {
         printf(x);
-    };
-    else {
+        raul_ikeda = 42;
+        m4Rc3L0_4NDr4D3 = scanf();
+        if (raul_ikeda > m4Rc3L0_4NDr4D3)
+            printf(raul_ikeda);
+        printf(m4Rc3L0_4NDr4D3 /* sempre deve excecutar */);
+    } else {
         printf(y);
+        raul_ikeda = scanf();
+        m4Rc3L0_4NDr4D3 = -3;
+        if (raul_ikeda > m4Rc3L0_4NDr4D3)
+            printf(m4Rc3L0_4NDr4D3)
+        else {
+            raul_ikeda = raul_ikeda + m4Rc3L0_4NDr4D3;
+            printf(raul_ikeda);
+        };
+        printf(raul_ikeda);
     };
 
+    void MaC4C0_Qu474,
+        z1K4_v1Ru5;
+
     if (x == y)
-        printf(x);
+        printf(x)
     else
         printf(y);
 
