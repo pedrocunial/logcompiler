@@ -8,8 +8,9 @@ class Symbol(object):
 
 
 class SymbolTable(object):
-    def __init__(self):
+    def __init__(self, father=None):
         self.st = {}
+        self.father = father
 
     def add(self, type_, key):
         if key in self.st:
@@ -18,13 +19,18 @@ class SymbolTable(object):
 
     def get(self, key):
         if key not in self.st:
-            raise ValueError('Key {} is not in symbol table'
-                             .format(key))
+            if self.father is not None:
+                return self.father.get(key)
+            else:
+                raise ValueError(f'Key {key} is not in symbol table')
         return self.st[key].value
 
     def set(self, key, value):
         if key not in self.st:
-            raise ValueError(f'Undefined variable {key}')
+            if self.father is not None:
+                return self.father.set(key, value)
+            else:
+                raise ValueError(f'Undefined variable {key}')
         if self.st[key].type_ == const.CHAR:
             if value < const.MIN_CHAR or value > const.MAX_CHAR:
                 raise ValueError(f'Unmatching size of value {value} for type' +
@@ -33,3 +39,12 @@ class SymbolTable(object):
                 self.st[key].value = value
         else:
             self.st[key].value = value
+
+    def has_return(self):
+        return const.RETURN in self.st
+
+    def get_return(self):
+        if self.has_return():
+            return self.st[const.RETURN]
+        else:
+            raise ValueError('Function has no return')

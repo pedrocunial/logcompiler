@@ -244,7 +244,7 @@ class Parser:
         value = Parser.tok.get_next()
         return nd.CmdsOp(None, stmts)
 
-    def analyze_main():
+    def analyze_programx():
         ''' <type> main() { <stmts> } '''
         value = Parser.tok.curr  # should be type
         if value.val not in const.TYPES:
@@ -263,9 +263,48 @@ class Parser:
         stmts = Parser.analyze_stmts()
         return stmts
 
+    def analyze_argdec():
+        ''' <type> <varname> {, <varname>} '''
+        type_ = Parser.tok.curr.val
+        varnames = [Parser.tok.get_next()]
+        if varnames[0].t != const.VARIABLE:
+            raise ValueError('Unexpected token type {}, expected variable name'
+                             .format(varnames[0].t))
+        Parser.tok.get_next()
+        varnames = [varname.val for varname in varnames]
+        return nd.BinOp(const.DECLARE, [type_, varnames])
+
+    def analyze_funcdec():
+        ''' <type> <funcname>(<funcargs>) { <stmts> } '''
+        func_type = Parser.tok.curr
+        if func_type.val not in const.TYPES:
+            raise ValueError('Function declaration doesn\'t start' +
+                             ' with a known type')
+        func_type = func_type.val
+        func_name = Parser.tok.get_next()
+        if func_name.t == const.RESERVED_WORD:
+            raise ValueError('Function name cannot be a reserved word')
+        func_name = func_name.val
+        value = Parser.tok.get_next()
+        if value.val != const.OPEN_PARENT:
+            raise ValueError(f'Expected (, not {value.val}')
+        value = Parser.tok.get_next()
+        args = []
+        while value.val != const.CLOSE_PARENT:
+            args.append(Parser.analyze_argdec())
+            curr = Parser.tok.curr
+            if curr.val not in (const.COMMA, const.CLOSE_PARENT):
+                raise ValueError(f'Unexpected token type {curr.val},' +
+                                 ' expected "," or ")"')
+
+    def analyze_program():
+        ''' loop of function declarations '''
+        while Parser.is_valid(Parser.tok.curr):
+            Parser.analyze_funcdec()
+
     def parse():
         st = SymbolTable()
-        res = Parser.analyze_main()
+        res = Parser.analyze_program()
         if Parser.is_valid(Parser.tok.curr):
             utils.print_error(Parser)
             raise ValueError('Found remaning values after last block')
