@@ -17,8 +17,8 @@ Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O 
 
 ```
 program = {funcdec};
-funcdec = type, funcname, '(', [expr, {',' expr}], ')', stmts;
-funccall = funcname, '(', [expr, {',', expr}], ')';
+funcdec = type, varname, '(', [expr, {',' expr}], ')', stmts;
+funccall = varname, '(', [expr, {',', expr}], ')';
 type = ('int' | 'char' | 'void');
 logic_stmt = expr, ('==' | '>' | '<'), expr;
 logic_expr = logic_term, {'||', logic_term};
