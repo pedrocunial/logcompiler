@@ -16,11 +16,24 @@ class Parser:
     def is_valid(value):
         return value.t is not None and value.val is not None
 
+    def analyze_funccall():
+        ''' <func_name>({<func_arg> , }) '''
+        func_name = Parser.tok.curr.val
+        value = Parser.tok.get_next()
+        if value.t != const.OPEN_PARENT:
+            raise ValueError(f'Unexpected token type {value.t}, expected (')
+        args = []
+        while Parser.is_valid(value):
+            args.append(Parser.analyze_expression())
+            if Parser.tok.curr.t == const.CLOSE_PARENT:
+                break
+        return nd.FuncCall(func_name, args)
+
     def analyze_fact():
         ''' analyze a factor, as defined in the README.md '''
         value = Parser.tok.get_next()
         if not Parser.is_valid(value):
-            raise ValueError('Invalid token at position {} of the string o"{}"'
+            raise ValueError('Invalid token at position {} of the string "{}"'
                              .format(Parser.tok.pos, Parser.tok.src))
 
         if value.t == const.OPEN_PARENT:
@@ -37,6 +50,8 @@ class Parser:
         elif value.t == const.INT:
             return nd.IntVal(value.val, [])
         elif value.t == const.VARIABLE:
+            if Parser.tok.peek().val == const.OPEN_PARENT:
+                return Parser.analyze_funccall()
             return nd.VarVal(value.val, [])
         elif value.t == const.RESERVED_WORD and value.val == const.SCANF:
             value = Parser.tok.get_next()
@@ -49,6 +64,7 @@ class Parser:
                                  'expected )')
             return nd.Scanf(value.val, [])
         else:
+            utils.print_error(Parser)
             raise ValueError(
                 'Unexpected token type, expected a factor, got a {}'.format(
                     value.t))
@@ -185,6 +201,8 @@ class Parser:
             raise ValueError('Unexpected token type {}, expected variable name'
                              .format(varnames[0].t))
         value = Parser.tok.get_next()
+        if value.t == const.OPEN_PARENT:
+            return Parser.analyze_funcdec_pt2(type_, varnames[0].val)
         while Parser.is_valid(value) and value.t == const.COMMA:
             value = Parser.tok.get_next()
             if value.t != const.VARIABLE:
@@ -194,6 +212,11 @@ class Parser:
             value = Parser.tok.get_next()
         varnames = [varname.val for varname in varnames]
         return nd.BinOp(const.DECLARE, [type_, varnames])
+
+    def analyze_return():
+        ''' return <expression> '''
+        res = nd.UnOp(const.RETURN, [Parser.analyze_expression()])
+        return res
 
     def analyze_stmt():
         ''' basically, a cmd is a line of code '''
@@ -207,6 +230,8 @@ class Parser:
         elif value.t == const.RESERVED_WORD:
             if value.val in const.TYPES:
                 return Parser.analyze_vardec()
+            elif value.val == const.RETURN:
+                return Parser.analyze_return()
             elif value.val == const.IF:
                 return Parser.analyze_if()
             elif value.val == const.WHILE:
@@ -228,6 +253,7 @@ class Parser:
         '''
         value = Parser.tok.curr
         if value.t != const.OPEN_BLOCK:
+            utils.print_error(Parser)
             raise ValueError('First token should be an {, not {}'
                              .format(value.t))
         stmts = [Parser.analyze_stmt()]
@@ -244,35 +270,34 @@ class Parser:
         value = Parser.tok.get_next()
         return nd.CmdsOp(None, stmts)
 
-    def analyze_programx():
-        ''' <type> main() { <stmts> } '''
-        value = Parser.tok.curr  # should be type
-        if value.val not in const.TYPES:
-            raise ValueError('Program doesn\'t start with a known type')
-        value = Parser.tok.get_next()
-        if value.val != const.MAIN:
-            raise ValueError('Main function should be named main, '
-                             f'not {value.val}')
-        value = Parser.tok.get_next()
-        if value.val != const.OPEN_PARENT:
-            raise ValueError(f'Expected (, not {value.val}')
-        value = Parser.tok.get_next()
-        if value.val != const.CLOSE_PARENT:
-            raise ValueError(f'Expected ), not {value.val}')
-        Parser.tok.get_next()
-        stmts = Parser.analyze_stmts()
-        return stmts
-
     def analyze_argdec():
         ''' <type> <varname> {, <varname>} '''
         type_ = Parser.tok.curr.val
         varnames = [Parser.tok.get_next()]
         if varnames[0].t != const.VARIABLE:
+            utils.print_error(Parser)
             raise ValueError('Unexpected token type {}, expected variable name'
                              .format(varnames[0].t))
-        Parser.tok.get_next()
         varnames = [varname.val for varname in varnames]
         return nd.BinOp(const.DECLARE, [type_, varnames])
+
+    def analyze_funcdec_pt2(func_type, func_name):
+        value = Parser.tok.curr
+        if value.val != const.OPEN_PARENT:
+            raise ValueError(f'Expected (, not {value.val}')
+        value = Parser.tok.get_next()
+        args = []
+        while value.val in const.TYPES:
+            args.append(Parser.analyze_argdec())
+            value = Parser.tok.get_next()
+            if value.val not in (const.COMMA, const.CLOSE_PARENT):
+                raise ValueError(f'Unexpected token type {value.val},' +
+                                 ' expected "," or ")"')
+            if value.val == const.COMMA:
+                value = Parser.tok.get_next()
+        Parser.tok.get_next()  # should be {
+        func_block = Parser.analyze_stmts()
+        return nd.FuncDec(func_name, [func_type, args, func_block])
 
     def analyze_funcdec():
         ''' <type> <funcname>(<funcargs>) { <stmts> } '''
@@ -285,27 +310,18 @@ class Parser:
         if func_name.t == const.RESERVED_WORD:
             raise ValueError('Function name cannot be a reserved word')
         func_name = func_name.val
-        value = Parser.tok.get_next()
-        if value.val != const.OPEN_PARENT:
-            raise ValueError(f'Expected (, not {value.val}')
-        value = Parser.tok.get_next()
-        args = []
-        while value.val != const.CLOSE_PARENT:
-            args.append(Parser.analyze_argdec())
-            curr = Parser.tok.curr
-            if curr.val not in (const.COMMA, const.CLOSE_PARENT):
-                raise ValueError(f'Unexpected token type {curr.val},' +
-                                 ' expected "," or ")"')
+        Parser.tok.get_next()
+        return Parser.analyze_funcdec_pt2(func_type, func_name)
 
-    def analyze_program():
+    def analyze_program(st):
         ''' loop of function declarations '''
         while Parser.is_valid(Parser.tok.curr):
-            Parser.analyze_funcdec()
+            Parser.analyze_funcdec().eval(st)
 
     def parse():
         st = SymbolTable()
-        res = Parser.analyze_program()
+        Parser.analyze_program(st)
         if Parser.is_valid(Parser.tok.curr):
             utils.print_error(Parser)
             raise ValueError('Found remaning values after last block')
-        return res.eval(st)
+        return nd.FuncCall(const.MAIN, []).eval(st)

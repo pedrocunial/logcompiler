@@ -1,3 +1,26 @@
+int mult(int x, int y)
+/* so botei esse comentario pq eu posso */
+{
+    printf(x);
+    printf(y);
+
+    int sum;
+    sum = 0;
+
+    int increment(int z)
+    {
+        return sum + z;
+    };
+
+    while (y > 0) {
+        sum = increment(x);
+        y = y - 1;
+    };
+
+    return sum;
+}
+
+
 void main() {
     /* isso e um comentario e
        deveria
@@ -10,6 +33,8 @@ void main() {
     char raul_ikeda, m4Rc3L0_4NDr4D3;
     x = 3;
     y        =        2;
+
+    printf(mult(x+y, y));
 
     if (y > 2)
         printf(y);

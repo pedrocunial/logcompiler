@@ -8,6 +8,15 @@ class Tokenizer:
         self.pos = pos
         self.curr = tk.EmptyToken()
 
+    def peek(self):
+        ''' checks next token without changing current obj state '''
+        pos = self.pos
+        curr = self.curr
+        peeked = self.get_next()
+        self.pos = pos
+        self.curr = curr
+        return peeked
+
     def get_next(self):
         ''' return the next token '''
         if self.pos >= len(self.src):

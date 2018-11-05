@@ -16,7 +16,9 @@ Para executar o programa, basta rodar o arquivo [/src/main/py](/src/main.py). O 
 ### EBNF
 
 ```
-program = type, 'main', '(', ')', stmts;
+program = {funcdec};
+funcdec = type, funcname, '(', [expr, {',' expr}], ')', stmts;
+funccall = funcname, '(', [expr, {',', expr}], ')';
 type = ('int' | 'char' | 'void');
 logic_stmt = expr, ('==' | '>' | '<'), expr;
 logic_expr = logic_term, {'||', logic_term};
@@ -25,13 +27,14 @@ logic_factor = ('!', logic_factor) | logic_stmt;
 if = 'if', '(', logic_expr, ')', stmt, ['else', stmt];
 while = 'while', '(', logic_expr, ')', stmt;
 stmts = '{', stmt, ';', {stmt, ';'}, '}';
-stmt = print | atribuicao | stmts | if | while | vardec;
+stmt = print | atribuicao | stmts | if | while | vardec | funcdec | return;
+return = 'return', expr;
 vardec = type, varname, {',', varname};
 atribuicao = varname, '=', expr;
 print = 'printf', '(', expr, ')';
 expr = term, {('+' | '-'), term};
 term = factor, {('*' | '/'), factor};
-factor = varname | (('+' | '-') factor) | (num) | ('(', expr, ')') | scanf;
+factor = varname | (('+' | '-') factor) | (num) | ('(', expr, ')') | scanf | funccall;
 scanf = 'scanf', '(', ')';
 num = digit, {digit};
 varname = char, {(char | digit | '_')};

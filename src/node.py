@@ -16,10 +16,9 @@ class CmdsOp(Node):
     def eval(self, st):
         for child in self.children:
             child.eval(st)
-        if st.has_return():
-            return st.get_return()
-        else:
-            return None
+            if st.has_return():
+                return st.get_return()
+        return None
 
 
 class VarBlock(Node):
@@ -28,9 +27,10 @@ class VarBlock(Node):
             child.eval(st)
 
 
-class FuncDef(Node):
+class FuncDec(Node):
     def __init__(self, value, children):
         if len(children) != const.FUNCDEF_CHILD_SIZE:
+            # 3 children: [type, args, body]
             raise ValueError('Wrong size for children, expected {}, got {}'
                              .format(const.FUNCDEF_CHILD_SIZE, len(children)))
         super().__init__(value, children)
@@ -41,23 +41,24 @@ class FuncDef(Node):
 
 
 class FuncCall(Node):
-    def __init__(self, value, children):
-        if len(children) != const.FUNCCALL_CHILD_SIZE:  # 1 (varblock)
-            raise ValueError('Wrong size for children, expected {}, got {}'
-                             .format(const.FUNCCALL_CHILD_SIZE, len(children)))
-        super().__init__(value, children)
-
     def eval(self, st):
-        func_type, func_body = self.st.get(self.value)
+        func_type, func_args, func_body = st.get(self.value)
+        if len(func_args) != len(self.children):
+            raise ValueError('Unmatching sizes between defined function args' +
+                             f' and calling args ({len(func_args)} -- ' +
+                             f'{len(self.children)})')
         inner_st = SymbolTable(father=st)
         if func_type != const.VOID:
             inner_st.add(func_type, const.RETURN)
-        for arg in self.children:
-            inner_st.add(arg)
+        for key, value in zip(func_args, self.children):
+            key.eval(inner_st)  # adds <key> to inner_st
+            arg_type, arg_name = key.children
+            # evals value with outter st
+            inner_st.set(arg_name[0], value.eval(st))
         ret_val = func_body.eval(inner_st)
         if func_type != const.VOID and ret_val is None:
             raise ValueError('Non void function is not returning a value')
-        elif func_type == const.VOID and ret_val is not None:
+        elif func_type == const.VOID:
             return None
         elif func_type != ret_val.type_:
             raise ValueError('Miss-matched type between function and return')
@@ -139,6 +140,8 @@ class UnOp(Node):
             print(self.children[0].eval(st))
         elif self.value == const.NOT:
             return not self.children[0].eval(st)
+        elif self.value == const.RETURN:
+            st.set(const.RETURN, self.children[0].eval(st))
         else:
             raise ValueError('Unexpected operator {} for unop'
                              .format(self.value))
