@@ -93,8 +93,8 @@ EXIT_SEGMENT_TEXT = '''
     INT 0x80
 '''
 
-INT_VARDEC = '    {varname} ' + const.INT_REGISTER + ' 1'
-INT_CHARDEC = '    {varname} ' + const.CHAR_REGISTER + ' 1'
+INT_VARDEC = '    {varname} ' + const.INT_REGISTER + ' 1\n'
+CHAR_VARDEC = '    {varname} ' + const.CHAR_REGISTER + ' 1\n'
 
 
 class CodeGenerator:
@@ -102,4 +102,17 @@ class CodeGenerator:
         self.consts = SYS_CONSTS
         self.data = SEGMENT_DATA
         self.variables = SEGMENT_VARIABLES
+        self.text = INITIAL_SEGMENT_TEXT
 
+    def add_variable(self, varname, st):
+        var = varname + '_' + st.id_
+        if st.get_type(varname) == const.INT:
+            self.variables += INT_VARDEC.format(varname=var)
+        elif st.get_type(varname) == const.CHAR:
+            self.variables += CHAR_VARDEC.format(varname=var)
+        else:
+            raise ValueError(f'Unaccepted vartype {st.get_type(varname)}')
+
+    def generate(self):
+        return self.consts + self.data + self.variables + self.text + \
+            EXIT_SEGMENT_TEXT

@@ -49,7 +49,7 @@ CLOSE_BLOCK = '}'
 OPEN_COMMENT = '/*'
 CLOSE_COMMENT = '*/'
 
-STD_FILE_NAME = '../examples/example.c'
+STD_FILE_NAME = '../examples/asm_example.c'
 
 TYPES = (INT, CHAR, VOID)
 SIGN_OPS = (PLUS, MINUS)

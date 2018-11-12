@@ -1,5 +1,7 @@
 import constants as const
 
+from identifier import ID
+
 
 class Symbol(object):
     def __init__(self, value, type_):
@@ -10,6 +12,7 @@ class Symbol(object):
 class SymbolTable(object):
     def __init__(self):
         self.st = {}
+        self.id_ = ID.get_new()
 
     def add(self, type_, key):
         if key in self.st:
@@ -21,6 +24,12 @@ class SymbolTable(object):
             raise ValueError('Key {} is not in symbol table'
                              .format(key))
         return self.st[key].value
+
+    def get_type(self, key):
+        if key not in self.st:
+            raise ValueError('Key {} is not in symbol table'
+                             .format(key))
+        return self.st[key].type_
 
     def set(self, key, value):
         if key not in self.st:

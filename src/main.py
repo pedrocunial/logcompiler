@@ -10,4 +10,4 @@ if __name__ == '__main__':
 
     with open(args.file, 'r') as fin:
         prs.Parser(fin.read())
-        prs.Parser.parse()
+        print(prs.Parser.parse())

@@ -4,4 +4,4 @@ class ID:
     def get_new():
         ret = ID.__id
         ID.__id += 1
-        return ret
+        return str(ret)

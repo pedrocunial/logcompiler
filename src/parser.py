@@ -265,8 +265,10 @@ class Parser:
 
     def parse():
         st = SymbolTable()
+        nd.init_codegen()
         res = Parser.analyze_main()
         if Parser.is_valid(Parser.tok.curr):
             utils.print_error(Parser)
             raise ValueError('Found remaning values after last block')
-        return res.eval(st)
+        res.eval(st)
+        return nd.codegen.generate()

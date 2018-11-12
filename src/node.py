@@ -1,10 +1,22 @@
 import constants as const
 
+from identifier import ID
+from code_generator import CodeGenerator
+
+
+codegen = None
+
+
+def init_codegen():
+    global codegen
+    codegen = CodeGenerator()
+
 
 class Node(object):
     def __init__(self, value, children):
         self.value = value
         self.children = children
+        self.id_ = ID.get_new()
 
     def eval(self, st):
         raise ValueError('Node class should not be directly evaluated')
@@ -70,6 +82,7 @@ class BinOp(Node):
         elif self.value == const.DECLARE:
             for child in self.children[1]:
                 st.add(self.children[0], child)
+                codegen.add_variable(child, st)
         else:
             raise ValueError('Unexpected operator {} for binop'
                              .format(self.value))
