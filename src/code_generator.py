@@ -18,11 +18,12 @@ segment .data
 
 SEGMENT_VARIABLES = '''
 segment .bss   ; variaveis
+    res RESB 1  ; usado na funcao print
 '''
 
 INITIAL_SEGMENT_TEXT = '''
 section .text
-global __start
+global _start
 
 print:   ; subrotina do print
     POP EBX
