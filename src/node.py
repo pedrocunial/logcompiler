@@ -53,39 +53,40 @@ class BinOp(Node):
 
     def eval_while(self, st):
         ''' extracted because the method was too long '''
-        while self.children[0].eval(st):
-            self.children[1].eval(st)
+        codegen.while_op(self.children, st, self.id_)
+        # while self.children[0].eval(st):
+        #     self.children[1].eval(st)
 
     def eval(self, st):
-        if self.value == const.PLUS:
-            return self.children[0].eval(st) + self.children[1].eval(st)
-        elif self.value == const.MINUS:
-            return self.children[0].eval(st) - self.children[1].eval(st)
-        elif self.value == const.DIV:
-            return self.children[0].eval(st) // self.children[1].eval(st)
-        elif self.value == const.MULT:
-            return self.children[0].eval(st) * self.children[1].eval(st)
-        elif self.value == const.ASSIGN:
-            st.set(self.children[0], self.children[1].eval(st))
-        elif self.value == const.EQUALS:
-            return self.children[0].eval(st) == self.children[1].eval(st)
-        elif self.value == const.LT:
-            return self.children[0].eval(st) < self.children[1].eval(st)
-        elif self.value == const.GT:
-            return self.children[0].eval(st) > self.children[1].eval(st)
-        elif self.value == const.AND:
-            return self.children[0].eval(st) and self.children[1].eval(st)
-        elif self.value == const.OR:
-            return self.children[0].eval(st) or self.children[1].eval(st)
+        codegen.binop(self.value, self.children, st)
+        # if self.value == const.PLUS:
+        #     return self.children[0].eval(st) + self.children[1].eval(st)
+        # elif self.value == const.MINUS:
+        #     return self.children[0].eval(st) - self.children[1].eval(st)
+        # elif self.value == const.DIV:
+        #     return self.children[0].eval(st) // self.children[1].eval(st)
+        # elif self.value == const.MULT:
+        #     return self.children[0].eval(st) * self.children[1].eval(st)
+        if self.value == const.ASSIGN:
+            # st.set(self.children[0], self.children[1].eval(st))
+            self.children[1].eval(st)
+            codegen.assign(self.children[0], st)
+        # elif self.value == const.EQUALS:
+        #     return self.children[0].eval(st) == self.children[1].eval(st)
+        # elif self.value == const.LT:
+        #     return self.children[0].eval(st) < self.children[1].eval(st)
+        # elif self.value == const.GT:
+        #     return self.children[0].eval(st) > self.children[1].eval(st)
+        # elif self.value == const.AND:
+        #     return self.children[0].eval(st) and self.children[1].eval(st)
+        # elif self.value == const.OR:
+        #     return self.children[0].eval(st) or self.children[1].eval(st)
         elif self.value == const.WHILE:
             self.eval_while(st)
         elif self.value == const.DECLARE:
             for child in self.children[1]:
                 st.add(self.children[0], child)
                 codegen.add_variable(child, st)
-        else:
-            raise ValueError('Unexpected operator {} for binop'
-                             .format(self.value))
 
 
 class UnOp(Node):
@@ -96,17 +97,19 @@ class UnOp(Node):
         super().__init__(value, children)
 
     def eval(self, st):
-        if self.value == const.PLUS:
-            return +self.children[0].eval(st)
-        elif self.value == const.MINUS:
-            return -self.children[0].eval(st)
-        elif self.value == const.PRINT:
-            print(self.children[0].eval(st))
-        elif self.value == const.NOT:
-            return not self.children[0].eval(st)
-        else:
-            raise ValueError('Unexpected operator {} for unop'
-                             .format(self.value))
+        self.children[0].eval(st)
+        codegen.unop(self.value)
+        # if self.value == const.PLUS:
+        #     # return +self.children[0].eval(st)
+        # elif self.value == const.MINUS:
+        #     # return -self.children[0].eval(st)
+        # elif self.value == const.PRINT:
+        #     # print(self.children[0].eval(st))
+        # elif self.value == const.NOT:
+        #     # return not self.children[0].eval(st)
+        # else:
+        #     raise ValueError('Unexpected operator {} for unop'
+        #                      .format(self.value))
 
 
 class Scanf(Node):
@@ -128,7 +131,8 @@ class IntVal(Node):
         super().__init__(value, children)
 
     def eval(self, st):
-        return int(self.value)
+        codegen.get_num(self.value)
+        # return int(self.value)
 
 
 class VarVal(Node):
@@ -139,7 +143,8 @@ class VarVal(Node):
         super().__init__(value, children)
 
     def eval(self, st):
-        return st.get(self.value)
+        codegen.get_variable(self.value, st)
+        # return st.get(self.value)
 
 
 class NoOp(Node):

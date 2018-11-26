@@ -83,7 +83,7 @@ binop_true:
 binop_exit:
     RET
 
-__start:
+_start:
     ; codigo gerado pelo compilador
 '''
 
@@ -95,6 +95,35 @@ EXIT_SEGMENT_TEXT = '''
 
 INT_VARDEC = '    {varname} ' + const.INT_REGISTER + ' 1\n'
 CHAR_VARDEC = '    {varname} ' + const.CHAR_REGISTER + ' 1\n'
+ASSIGN = '    MOV [{varname}], EBX\n'
+GET_VAR = '    MOV EBX, [{varname}]\n'
+GET_NUM = '    MOV EBX, {num}\n'
+NOT_OP = '    NOT EBX\n'
+NEG_OP = '    NEG EBX\n'
+PRINT_OP = '''    PUSH EBX
+    CALL print
+'''
+PUSH_EBX = '   PUSH EBX\n'
+POP_EAX = '    POP EAX\n'
+SUM_OP = '    ADD EAX, EBX\n'
+SUB_OP = '    SUB EAX, EBX\n'
+DIV_OP = '''    MOV EDX, 0
+    IDIV EBX
+'''
+MULT_OP = '    IMUL EBX\n'
+CMP_OP = '    CMP EAX, EBX\n'
+EQUALS_OP = CMP_OP + '    CALL binop_je\n'
+GT_OP = CMP_OP + '    CALL binop_jg\n'
+LT_OP = CMP_OP + '    CALL binop_jl\n'
+AND_OP = '    AND EAX, EBX\n'
+OR_OP = '    OR EAX, EBX\n'
+FINISH_BINOP = '    MOV EBX, EAX\n'
+
+CHECK_LOOP_CONDITION = '''    CMP EBX, False
+JE EXIT_{loop_id}
+'''
+CLOSE_LOOP = '''    JMP {label}
+EXIT_{label_id}'''
 
 
 class CodeGenerator:
@@ -112,6 +141,60 @@ class CodeGenerator:
             self.variables += CHAR_VARDEC.format(varname=var)
         else:
             raise ValueError(f'Unaccepted vartype {st.get_type(varname)}')
+
+    def get_variable(self, varname, st):
+        var = varname + '_' + st.id_
+        self.text += GET_VAR.format(varname=var)
+
+    def get_num(self, num):
+        self.text += GET_NUM.format(num=num)
+
+    def while_op(self, children, st, loop_id):
+        label = f'LOOP_{loop_id}'
+        self.text += label
+        children[0].eval(st)  # loop condition
+        self.text += CHECK_LOOP_CONDITION.format(loop_id=loop_id)
+        children[1].eval(st)
+        self.text += CLOSE_LOOP.format(label=label, loop_id=loop_id)
+
+    def unop(self, op):
+        if op == const.NOT:
+            self.text += NOT_OP
+        elif op == const.MINUS:
+            self.text += NEG_OP
+        elif op == const.PRINT:
+            self.text += PRINT_OP
+
+    def binop(self, op, children, st):
+        if op in (const.DECLARE, const.ASSIGN, const.WHILE):
+            return
+        children[0].eval(st)
+        self.text += PUSH_EBX
+        children[1].eval(st)
+        self.text += POP_EAX
+        if op == const.PLUS:
+            self.text += SUM_OP
+        elif op == const.MINUS:
+            self.text += SUB_OP
+        elif op == const.DIV:
+            self.text += DIV_OP
+        elif op == const.MULT:
+            self.text += MULT_OP
+        elif op == const.EQUALS:
+            self.text += EQUALS_OP
+        elif op == const.LT:
+            self.text += LT_OP
+        elif op == const.GT:
+            self.text += GT_OP
+        elif op == const.AND:
+            self.text += AND_OP
+        elif op == const.OR:
+            self.text += OR_OP
+        self.text += FINISH_BINOP
+
+    def assign(self, varname, st):
+        var = varname + '_' + st.id_
+        self.text += ASSIGN.format(varname=var)
 
     def generate(self):
         return self.consts + self.data + self.variables + self.text + \
