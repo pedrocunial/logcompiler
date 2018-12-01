@@ -36,12 +36,13 @@ class TriOp(Node):
         super().__init__(value, children)
 
     def eval(self, st):
-        if self.value == const.IF:
-            self.children[1].eval(st) if self.children[0].eval(st) \
-                else self.children[2].eval(st)
-        else:
-            raise ValueError('Unexpected operator {} for triop'
-                             .format(self.value))
+        codegen.if_stmt(self.children, st, self.id_)
+        # if self.value == const.IF:
+        #     self.children[1].eval(st) if self.children[0].eval(st) \
+        #         else self.children[2].eval(st)
+        # else:
+        #     raise ValueError('Unexpected operator {} for triop'
+        #                      .format(self.value))
 
 
 class BinOp(Node):

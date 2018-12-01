@@ -8,5 +8,13 @@ void main() {
     marcelo = 33;
     r4uL_1K3d4 = -42;
 
-    printf(marcelo);
+    while (marcelo > x) {
+        x = x * x;
+    };
+
+    if (marcelo < x) {
+        printf(marcelo);
+    } else {
+        printf(r4uL_1K3d4);
+    };
 }

@@ -104,7 +104,7 @@ NEG_OP = '    NEG EBX\n'
 PRINT_OP = '''    PUSH EBX
     CALL print
 '''
-PUSH_EBX = '   PUSH EBX\n'
+PUSH_EBX = '    PUSH EBX\n'
 POP_EAX = '    POP EAX\n'
 SUM_OP = '    ADD EAX, EBX\n'
 SUB_OP = '    SUB EAX, EBX\n'
@@ -121,10 +121,16 @@ OR_OP = '    OR EAX, EBX\n'
 FINISH_BINOP = '    MOV EBX, EAX\n'
 
 CHECK_LOOP_CONDITION = '''    CMP EBX, False
-JE EXIT_{loop_id}
+    JE EXIT_{loop_id}
 '''
+CHECK_IF_CONDITION = '''    CMP EBX, False
+    JE FALSE_{if_id}
+'''
+CLOSE_TRUE_STMT = '    JMP {label}\n'
 CLOSE_LOOP = '''    JMP {label}
-EXIT_{label_id}'''
+    EXIT_{label_id}
+'''
+FALSE_LABEL = '    FALSE_{if_id}\n'
 
 
 class CodeGenerator:
@@ -150,13 +156,25 @@ class CodeGenerator:
     def get_num(self, num):
         self.text += GET_NUM.format(num=num)
 
+    def if_stmt(self, children, st, if_id):
+        label = f'    IF_{if_id}\n'
+        exit_label = f'    EXIT_{if_id}\n'
+        self.text += label
+        children[0].eval(st)  # if condition
+        self.text += CHECK_IF_CONDITION.format(if_id=if_id)
+        children[1].eval(st)  # true block
+        self.text += CLOSE_TRUE_STMT.format(label=exit_label)
+        self.text += FALSE_LABEL.format(if_id=if_id)
+        children[2].eval(st)
+        self.text += exit_label
+
     def while_op(self, children, st, loop_id):
-        label = f'LOOP_{loop_id}'
+        label = f'    LOOP_{loop_id}\n'
         self.text += label
         children[0].eval(st)  # loop condition
         self.text += CHECK_LOOP_CONDITION.format(loop_id=loop_id)
         children[1].eval(st)
-        self.text += CLOSE_LOOP.format(label=label, loop_id=loop_id)
+        self.text += CLOSE_LOOP.format(label=label, label_id=loop_id)
 
     def unop(self, op):
         if op == const.NOT:
